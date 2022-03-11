@@ -1,0 +1,131 @@
+The dynamic equilibrium for the body is defined as
+\[
+    \delta W_{f}^{(in)} = \delta W_{f}^{(el)} + 
+    \delta W_{f}^{(d)} +  \delta W_{f}^{(ex)} + \delta W_{f}^{(c)}.
+\]
+
+We define 
+
+\[
+    \delta W_{f}^{(in)} = \sum_{j=1}^{n_{e}} \delta W_{f_{j}}^{(in)}, \quad 
+    \delta W_{f}^{(el)} = \sum_{j=1}^{n_{e}} \delta W_{f_{j}}^{(el)}, \quad 
+    \delta W_{f}^{(d)} = \sum_{j=1}^{n_{e}} \delta W_{f_{j}}^{(d)}
+\]
+\[
+    \delta W_{f}^{(ex)} = \sum_{j=1}^{n_{e}} \delta W_{f_{j}}^{(ex)} \quad 
+    \text{and} \quad
+    \delta W_{f}^{(c)} = \sum_{j=1}^{n_{e}} \delta W_{f_{j}}^{(c)}.
+\]
+
+Then
+\begin{equation}
+    \sum_{j=1}^{n_{e}} \delta W_{f_{j}}^{(in)} = \sum_{j=1}^{n_{e}} \left(\delta W_{f_{j}}^{(el)} + 
+    \delta W_{f_{j}}^{(d)} +  \delta W_{f_{j}}^{(ex)} + \delta W_{f_{j}}^{(c)}
+    \right).
+    \label{eq:dynamic_equilibrium_concatenated}
+\end{equation}
+
+If we seperate the virtual works of the first element from the \emph{active} 
+elements, then equation \eqref{eq:dynamic_equilibrium_concatenated} becomes
+\begin{equation}
+    \sum_{j=2}^{n_{e}} \delta W_{f_{j}}^{(in)}
+    = \sum_{j=2}^{n_{e}} \left(\delta W_{f_{j}}^{(el)} + 
+    \delta W_{f_{j}}^{(d)} +  \delta W_{f_{j}}^{(ex)} + \delta W_{f_{j}}^{(c)}
+    \right) + \delta W_{f_1}
+    \label{eq:dynamic_equilibrium_split}
+\end{equation}
+where 
+\begin{equation}
+    \delta W_{f_1}  = \delta W_{f_{1}}^{(el)} + \delta W_{f_{1}}^{(d)} +
+    \delta W_{f_{1}}^{(ex)} + \delta W_{f_{1}}^{(c)} - \delta W_{f_{1}}^{(in)}.
+    \label{eq:dynamic_equilibrium_rfe1}
+\end{equation}
+
+Based on the expressions for the virtual works, Eq.
+\eqref{eq:dynamic_equilibrium_rfe1} can be written as
+\[
+    \delta W_{f_1}  = \vecd{Q}_{{el}_{1}}^{T} \delta \vecd{e}_{1}
+    + \vecd{Q}_{{f}_{1}}^{T} \delta \vecd{e}_{1}
+    + \vecd{Q}_{{d}_{1}}^{T} \delta \vecd{e}_{1}
+    + \vecd{Q}_{{c}_{1}}^{T} \delta \vecd{e}_{1}
+    - (\mat{M}_{f_1} \vecd{\ddot{e}}_{1} - \vecd{f}_{v_{f_1}})^{T}\ 
+    \delta \vecd{e}_{1}
+\]
+or 
+\[
+    \delta W_{f_1}  = \left(\vecd{Q}_{{el}_{1}} + \vecd{Q}_{{f}_{1}}
+    + \vecd{Q}_{{d}_{1}} + \vecd{Q}_{{c}_{1}} + \vecd{f}_{v_{f_1}} -
+    \mat{M}_{f_1} \vecd{\ddot{e}}_{1} \right)^{T} \delta \vecd{e}_{1}.
+\]
+
+If we define 
+\[
+    \vecd{Q}_{1} = \vecd{Q}_{{el}_{1}} + \vecd{Q}_{{f}_{1}}
+    + \vecd{Q}_{{d}_{1}} + \vecd{Q}_{{c}_{1}} + \vecd{f}_{v_{f_1}} -
+    \mat{M}_{f_1} \vecd{\ddot{e}}_{1}
+\]
+then the above expression can be written as
+\[
+    \delta W_{f_1} = \vecd{Q}_{1}^{T} \delta \vecd{e}_{1}.
+\]
+
+We introduce the mapping from the local generalised coordinates 
+$\vecd{e}_{j}$ of element $j$ to the flexible beam global generalised
+coordinates $\vecd{\bar{q}}$, such that
+$\vecd{e}_{j} = \mat{L}_{j} \vecd{\bar{q}}$, then
+the Eq. \eqref{eq:dynamic_equilibrium_split} can be written as
+
+treated as independent and, thus, its equations of motion can be expressed as
+\begin{equation}
+    \mat{M}_{f}\ \vecd{\ddot{\bar{q}}} = \vecd{f}_{v_f} + \vecd{Q}_{el} +
+    \vecd{Q}_{d} + \vecd{Q}_{f} + \vecd{Q}_{c}.
+    \label{eq:ddm_equations_of_motion}
+\end{equation}
+
+
+
+% with
+% \small
+% \begin{equation}
+%     \mat{M}_{f} = \sum\limits_{j=1}^{n_{e}}\mat{L}_{j}^{T} \mat{M}_{f_j} \mat{L}_{j}, 
+%     \quad 
+%     \vecd{f}_{v_f} = \sum\limits_{j=1}^{n_{e}}\mat{L}_{j}^{T} \vecd{f}_{v_{f_j}}
+%     \quad \text{and} \quad 
+%     \vecd{Q}_{\omega} = \sum\limits_{j=1}^{n_{e}}\mat{L}_{j}^{T} \vecd{Q}_{\omega_{j}}
+%     \quad \text{with} \quad \omega = \{el, d, f, c \}.
+%     \label{eq:matrices_sums}
+% \end{equation}
+
+
+% The state vector of element $j$ is defined as 
+% \[
+%     \vecd{e}_{j} = \begin{bmatrix}
+%         (\pvec{r}{OC_{j}}{F}{F})^{T} & \vecd{\theta}_{j}^{T}
+%     \end{bmatrix}^{T}.
+% \]
+
+% \subsection*{Inertial forces}
+
+% \begin{equation}
+%     \delta W_{f_j}^{(in)} = (\mat{M}_{f_j} \vecd{\ddot{e}}_{j} - \vecd{f}_{v_{f_j}})^{T}\ 
+%     \delta \vecd{e}_{j},
+% \end{equation}
+% The mass matrix is defined as
+% \[
+%     \mat{M}_{f_j}(\vecd{e}_{j}) = \int_{m_{f_j}} \mat{Z}_{j}^{T}(\vecd{x}_{j}, \vecd{e}_{j})
+%     \mat{Z}_{j}(\vecd{x}_{j}, \vecd{e}_{j})\ \mathrm{d}m_{f_j}
+% \]
+% or 
+% \[
+%     \mat{M}_{f_j}= \mat{M}_{f_j}(\vecd{e}_{j}).
+% \]
+
+% The Coriolis/centrifugal vector is defined as
+% \[
+%     \vecd{f}_{v_{f_j}}(\vecd{e}_{j}, \vecd{\dot{e}}_j)= - \int_{m_{f_j}} \mat{Z}_{j}^{T}(\vecd{x}_{j}, \vecd{e}_{j})\
+%     \vecd{a}_{v_{f_j}}(\vecd{x}_{j}, \vecd{e}_{j}, \vecd{\dot{e}}_j)\ \mathrm{d}m_{f_j}.
+% \]
+% or
+% \[
+%     \vecd{f}_{v_{f_j}} = \vecd{f}_{v_{f_j}}(\vecd{e}_{j}, \vecd{\dot{e}}_j)
+% \]

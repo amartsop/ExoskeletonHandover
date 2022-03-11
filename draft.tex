@@ -1,0 +1,65 @@
+% \section*{RFEM Control Structure}
+% \[
+%     \mat{M}_{f} \vecd{\ddot{\bar{q}}} = \vecd{f}_{v_f} + \vecd{Q}_{el} + 
+%     \vecd{Q}_{d} + \vecd{Q}_{f} + \vecd{Q}_{c}
+% \]
+
+% \subsection*{Dynamic Equilibrium}
+% \[
+%     \delta W_{f}^{(in)} = \delta W_{f}^{(el)} + 
+%     \delta W_{f}^{(d)} +  \delta W_{f}^{(ex)} + \delta W_{f}^{(c)}.
+% \]
+
+% We define 
+
+% \[
+%     \delta W_{f}^{(in)} = \sum_{j=1}^{n_{e}} \delta W_{f_{j}}^{(in)}, \quad 
+%     \delta W_{f}^{(el)} = \sum_{j=1}^{n_{e}} \delta W_{f_{j}}^{(el)}, \quad 
+%     \delta W_{f}^{(d)} = \sum_{j=1}^{n_{e}} \delta W_{f_{j}}^{(d)}
+% \]
+% \[
+%     \delta W_{f}^{(ex)} = \sum_{j=1}^{n_{e}} \delta W_{f_{j}}^{(ex)} \quad 
+%     \text{and} \quad
+%     \delta W_{f}^{(c)} = \sum_{j=1}^{n_{e}} \delta W_{f_{j}}^{(c)}.
+% \]
+
+% Then
+
+% \[
+%     \sum_{j=1}^{n_{e}} \delta W_{f_{j}}^{(in)} = \sum_{j=1}^{n_{e}} \left(\delta W_{f_{j}}^{(el)} + 
+%     \delta W_{f_{j}}^{(d)} +  \delta W_{f_{j}}^{(ex)} + \delta W_{f_{j}}^{(c)}
+%     \right).
+% \]
+
+% The state vector of element $j$ is defined as 
+% \[
+%     \vecd{e}_{j} = \begin{bmatrix}
+%         (\pvec{r}{OC_{j}}{F}{F})^{T} & \vecd{\theta}_{j}^{T}
+%     \end{bmatrix}^{T}.
+% \]
+
+% \subsection*{Inertial forces}
+
+% \begin{equation}
+%     \delta W_{f_j}^{(in)} = (\mat{M}_{f_j} \vecd{\ddot{e}}_{j} - \vecd{f}_{v_{f_j}})^{T}\ 
+%     \delta \vecd{e}_{j},
+% \end{equation}
+% The mass matrix is defined as
+% \[
+%     \mat{M}_{f_j}(\vecd{e}_{j}) = \int_{m_{f_j}} \mat{Z}_{j}^{T}(\vecd{x}_{j}, \vecd{e}_{j})
+%     \mat{Z}_{j}(\vecd{x}_{j}, \vecd{e}_{j})\ \mathrm{d}m_{f_j}
+% \]
+% or 
+% \[
+%     \mat{M}_{f_j}= \mat{M}_{f_j}(\vecd{e}_{j}).
+% \]
+
+% The Coriolis/centrifugal vector is defined as
+% \[
+%     \vecd{f}_{v_{f_j}}(\vecd{e}_{j}, \vecd{\dot{e}}_j)= - \int_{m_{f_j}} \mat{Z}_{j}^{T}(\vecd{x}_{j}, \vecd{e}_{j})\
+%     \vecd{a}_{v_{f_j}}(\vecd{x}_{j}, \vecd{e}_{j}, \vecd{\dot{e}}_j)\ \mathrm{d}m_{f_j}.
+% \]
+% or
+% \[
+%     \vecd{f}_{v_{f_j}} = \vecd{f}_{v_{f_j}}(\vecd{e}_{j}, \vecd{\dot{e}}_j)
+% \]

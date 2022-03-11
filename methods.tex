@@ -1,0 +1,602 @@
+\section{Materials and methods}
+\subsection{Equations of motion: RFEM approach}
+
+\begin{figure}[t]
+    \centering
+\centering\includegraphics[width=0.8 \linewidth]{Figures/rfem_mesh.eps}
+    \caption{needle division to rfes and sdes.}
+    \label{fig:rfem_mesh}
+\end{figure}
+
+\subsubsection{Kinematic description}
+The main idea of the RFEM method is replacing flexible bodies with a system of
+rigid finite elements (rfes) that are interconnected via spatial spring-damping
+elements (sdes) \cite[pp. 35]{wittbrodt2007dynamics}.
+The first step towards describing the kinematics of the proposed method is the
+division of the flexible body into rfes and sdes. This division can be performed
+in two stages \cite[pp. 37-40]{wittbrodt2007dynamics}. First, the flexible body
+is divided into $n$ elements, each of which has a length $\Delta l = L / n$, where
+$L$ is the needle's total length. The sdes are added at the centre point of
+the initial elements, as shown in Fig. \ref{fig:rfem_mesh}. In the secondary
+division, the initial elements are divided again, so that their
+edge points are interconnected by the sdes. As shown in Fig.
+\ref{fig:rfem_mesh}, intermediate rfes have now length equal to $\Delta L$,  while
+the first and last rfe have a length of $\Delta L / 2$.
+The configuration of the flexible body can now be described with the help of
+the resulting $n_e$ rfes. For this,
+we consider the rfe $j \in [1, n_e]$ shown in Fig. \ref{fig:rfem_element}.
+Due to the rigidity assumption, the configuration of the rfe $j$ can be
+completely characterised with the help of the body frame $f_{j}$, which is
+rigidly attached to the element's centre of mass $C_{j}$ shown in
+Fig. \ref{fig:rfem_element}. More specifically, the inertial position of an
+arbitrary point $P_{j}$ of element $j$ is given as 
+\begin{equation}
+    \pvec{r}{OP_{j}}{F}{F} = \pvec{r}{OC_{j}}{F}{F} + \mat{R}_{f_j}^{F} 
+    \pvec{r}{C_{j}P_{j}}{f_{j}}{f_{j}},
+   \label{eq:rfem_position} 
+\end{equation}
+where $\pvec{r}{OC_{j}}{F}{F}$ is the origin of frame $f_{j}$ measured in the inertial frame $F$ and $\mat{R}_{f_j}^{F}(\vecd{\theta_{j}})$ the rotation matrix that describes the orientation of frame $f_{j}$ with respect to $F$. As before, the rotation matrix is parametrised using the set of Euler angles $\vecd{\theta}_{j}$ that describe the sequence of intrinsic rotations $z_{0}$-$y'$-$x''$. It should be noted that, due to the rigidity assumption and contrary to the DDM method, the distance $\pvec{r}{C_{j}P_{j}}{f_{j}}{f_{j}}$ is constant. Thus, a complete characterisation of the rfe $j$ configuration can be obtained using the generalised coordinates 
+\begin{equation}
+    \vecd{e}_{j} = \begin{bmatrix}
+        (\pvec{r}{OC_{j}}{F}{F})^{T} & \vecd{\theta}_{j}^{T}
+    \end{bmatrix}^{T}.
+    \label{eq:rfem_genralised_coordinates}
+\end{equation}
+\noindent Based on expression \eqref{eq:rfem_position}, the inertial velocity of point $P_{j}$ is given as 
+\begin{equation}
+    \pvec{\dot{r}}{OP_{j}}{F}{F} = \mat{Z}_{j}(\vecd{x}_{j},
+    \vecd{e}_{j})\ \vecd{\dot{e}}_{j}
+    \quad \text{with} \quad
+    \mat{Z}_{j}(\vecd{x}_{j}, \vecd{e}_{j}) = \begin{bmatrix}
+        \mat{I}_{3} & -\mat{R}_{f_j}^{F} \mat{S}(\vecd{x}_{j})
+        \mat{G}_{j}
+    \end{bmatrix} \quad \text{and} \quad \vecd{x}_{j} = \pvec{r}{C_{j}P_{j}}{f_{j}}{f_{j}}.
+    \label{eq:rfem_velocity}
+\end{equation}
+The matrix
+$\mat{G}_{j} = \mat{G}({\vecd{\theta}_{j}})$ maps the derivatives of the Euler angles $\vecd{\dot{\theta}}_{j}$ to
+the rotational velocity of frame $f_{j}$, such that 
+\[
+    \pvec{\omega}{f_{j}}{F}{f_{j}} = \mat{G}_{j}(\vecd{\theta}_{j})\ \vecd{\dot{\theta}}_{j}.
+\]
+Similarly, the inertial acceleration of point $P_{j}$ can be defined as 
+\begin{equation}
+    \pvec{\ddot{r}}{OP_{j}}{F}{F} = \mat{Z}_{j}(\vecd{x}_{j},
+    \vecd{e}_{j})\ \vecd{\ddot{e}}_{j} + \vecd{a}_{v_{f_j}}(\vecd{x}_{j}, 
+    \vecd{e}_{j}, \vecd{\dot{e}}_j),
+    \label{eq:rfem_acceleration}
+\end{equation}
+where
+\[
+    \vecd{a}_{v_{f_j}}(\vecd{x}_{j}, \vecd{e}_{j}, \vecd{\dot{e}}_j) = 
+    \mat{R}_{f_j}^{F} \left(\mat{S}^{2}(\pvec{\omega}{f_{j}}{F}{F})
+    \ \vecd{x}_{j} - \mat{S}(\vecd{x}_{j})
+    \mat{\dot{G}}_{j} \vecd{\dot{\theta}}_{j}\right).
+\]   
+Furthermore, based on equations \eqref{eq:rfem_position} and
+\eqref{eq:rfem_velocity}, the inertial virtual displacement of point 
+$P_{j}$ can be written as 
+\begin{equation}
+    \delta\pvec{r}{OP_{j}}{F}{F} = \frac{\partial \pvec{r}{OP_{j}}{F}{F}}{\partial
+    \vecd{e}_{j}} \delta\vecd{e}_{j} =
+    \mat{Z}_{j}(\vecd{x}_{j}, \vecd{e}_{j}) \delta\vecd{e}_{j}.
+    \label{eq:rfem_virtual_displacement}
+\end{equation}
+\begin{figure}
+    \centering
+    \includegraphics[width=0.9\linewidth]{Figures/RFEM_Element.eps}
+    \caption{Spatial RFEM element.}
+    \label{fig:rfem_element}
+\end{figure}
+
+\subsubsection{Virtual work}
+
+\paragraph{Inertial forces}
+
+The virtual work of the inertial forces can be defined as 
+\[
+    \delta W_{f_j}^{(in)} = \int_{m_{f_j}} (\pvec{r}{OP_{j}}{F}{F})^{T}
+    \delta \pvec{r}{OP_{j}}{F}{F}\ \mathrm{d}m_{f_j} 
+\]
+\noindent which, using equations \eqref{eq:rfem_acceleration} and \eqref{eq:rfem_virtual_displacement}, leads to
+\begin{equation}
+    \delta W_{f_j}^{(in)} = (\mat{M}_{f_j} \vecd{\ddot{e}}_{j} - \vecd{f}_{v_{f_j}})^{T}\ 
+    \delta \vecd{e}_{j}
+    \label{eq:rfem_virtual_work_inertial}
+\end{equation}
+with
+\[
+    \mat{M}_{f_j}(\vecd{e}_{j}) = \int_{m_{f_j}} \mat{Z}_{j}^{T}(\vecd{x}_{j}, \vecd{e}_{j})
+    \mat{Z}_{j}(\vecd{x}_{j}, \vecd{e}_{j})\ \mathrm{d}m_{f_j} 
+    \Rightarrow \mat{M}_{f_j} = \mat{M}_{f_j}(\vecd{e}_{j}).
+\]
+and 
+\[
+    \vecd{f}_{v_{f_j}}(\vecd{e}_{j}, \vecd{\dot{e}}_j)= - \int_{m_{f_j}} \mat{Z}_{j}^{T}(\vecd{x}_{j}, \vecd{e}_{j})\
+    \vecd{a}_{v_{f_j}}(\vecd{x}_{j}, \vecd{e}_{j}, \vecd{\dot{e}}_j)\ \mathrm{d}m_{f_j}
+    \Rightarrow
+    \vecd{f}_{v_{f_j}} = \vecd{f}_{v_{f_j}}(\vecd{e}_{j}, \vecd{\dot{e}}_j).
+\]
+
+\paragraph{Elastic forces}
+
+The key component of the RFEM is the definition of the elastic forces that
+act on each rfe. As shown in Fig. \ref{fig:rfem_elastic_forces}, the rfe
+$j$ is subject to the elastic forces $\vecd{F}_{e_{j}}, \vecd{F}_{e_{j+1}}$ and
+the elastic moments $\vecd{M}_{e_{j}}, \vecd{M}_{e_{j+1}}$ due to the
+deformation of the associated sdes $s_{j}$ and $s_{j+1}$.  Based on Fig.
+\ref{fig:rfem_elastic_forces}, these forces and moments can be modelled as
+\cite{kaminski_application_2013}
+\begin{equation}
+    \vecd{V}_{e_{j}}^{F} = \vecd{V}_{{el}_j}^{l} + \vecd{V}_{d_j}^{l}
+    \quad \text{and} \quad \vecd{V}_{e_{j+1}}^{F} = \vecd{V}_{{el}_j}^{r} +
+    \vecd{V}_{d_j}^{r} \quad \text{with} \quad V=\{F, M\}.
+    \label{eq:rfem_elastic_forces_moments}
+\end{equation}
+The indices $el$ and ${d}$ refer to spring and damping forces/moments
+respectively. These can be modelled as
+\begin{equation}
+    \begin{bmatrix}
+        \vecd{F}_{{el}_j}^{\omega} \\
+        \vecd{M}_{{el}_j}^{\omega} \\
+        \vecd{F}_{d_j}^{\omega} \\
+        \vecd{M}_{d_j}^{\omega}
+    \end{bmatrix} = 
+    \begin{bmatrix}
+        \mat{K}_{s} & \mat{O}_{3} & \mat{O}_{3} & \mat{O}_{3}\\
+        \mat{O}_{3} & \mat{K}_{t} & \mat{O}_{3} & \mat{O}_{3} \\
+        \mat{O}_{3} & \mat{O}_{3} & \mat{C}_{s} & \mat{O}_{3} \\
+        \mat{O}_{3} & \mat{O}_{3} & \mat{O}_{3} & \mat{C}_{t}
+    \end{bmatrix}
+    \begin{bmatrix}
+        \vecd{r}_{\omega_j} \\
+        \vecd{\theta}_{\omega_j} \\
+        \vecd{\dot{r}}_{\omega_j} \\
+        \vecd{\dot{\theta}}_{\omega_j}
+    \end{bmatrix}
+    \label{eq:elastic_forces}
+\end{equation}
+\noindent with $\omega=\{l, r\}$ and $\mat{O}_{3}$ the $3\times 3$ null matrix.
+. Expressions for the constant stiffness and damping matrices $\mat{K}_{s}, \mat{C}_{s}, \mat{K}_{t}$ and $\mat{C}_{t}$ can be found in \cite[pp. 69-82]{wittbrodt2007dynamics}. In the above expression, vectors $\vecd{r}_{r_j}$ and $\vecd{r}_{l_j}$ denote the translational deformation of the sdes $s_j$ and $s_{j+1}$ respectively, and can be written as
+\[
+    \vecd{r}_{l_j} = \pvec{r}{OA_{j}}{F}{F} - \pvec{r}{OB_{j-1}}{F}{F}
+    \quad \text{and} \quad
+    \vecd{r}_{r_j} = \pvec{r}{OA_{j+1}}{F}{F} - \pvec{r}{OB_{j}}{F}{F}.
+\]
+Similarly, the elastic moments in equation \eqref{eq:rfem_elastic_forces_moments} are modelled based on the rotational deformations of the associated sdes $s_{j}$ and $s_{j+1}$, denoted as $\vecd{\theta}_{l_j}$ and $\vecd{\theta}_{r_j}$. These can be extracted from the rotation matrices $\mat{R}_{f_{j}}^{f_{j-1}}(\vecd{\theta}_{l_j})$ and $\mat{R}_{f_{j+1}}^{f_{j}}(\vecd{\theta}_{r_j})$ accordingly. From the expression above, the element's generalised elastic forces are nonlinear functions of the system's generalised coordinates. As a result, if these expressions are treated as forces external to the element $j$, then the virtual work caused by the generalised elastic and damping forces can be written as 
+\begin{equation}
+    \delta W_{f_j}^{(el)} = \vecd{Q}_{{el}_{j}}^{T} \delta \vecd{e}_{j} 
+    \quad \text{and} \quad 
+    \delta W_{f_j}^{(d)} = \vecd{Q}_{{d}_{j}}^{T} \delta \vecd{e}_{j},
+    \label{eq:rfem_virtual_work_elastic}
+\end{equation}
+where
+\begin{equation}
+    \vecd{Q}_{{\omega}_{j}}^{T} = \mat{Z}_{B_{j}}^{T} \vecd{F}_{{\omega}_j}^{r} - 
+    {\mat{Z}}_{A_{j}}^{T} \vecd{F}_{{\omega}_{j}}^{l} +
+    \left(\mat{R}_{f_j}^{F} \mat{G}_{j} \mat{L}_{\theta}\right)^{T} \left(
+    \vecd{M}_{{\omega}_j}^{r} - \vecd{M}_{{\omega}_j}^{l} \right)
+    \quad \text{with} \quad  \omega= \{el, d\}
+    \label{eq:generalized_elastic_forces}
+\end{equation}
+and
+\begin{equation}
+    \mat{Z}_{D_{j}} = \begin{bmatrix}
+        \mat{I}_{3} & -\mat{R}_{f_j}^{F}
+        \mat{S}(\pvec{r}{C_{j}D_{j}}{f_{j}}{f_{j}}) \mat{G}_{j}
+    \end{bmatrix} \quad \text{with} \quad D=\{A, B\}.
+    \label{eq:generalized_elastic_forces_z_matrix}
+\end{equation}
+The locator matrix $\mat{L}_{\theta}$ in the above expression maps the element's Euler angles to the element's generalised coordinates such that $\vecd{\theta}_{j} = \mat{L}_{\theta}\vecd{e}_{j}$.
+
+\subparagraph{Boundary Elements}
+As shown in Fig. \ref{fig:rfem_elastic_forces_boundaries}, the elastic forces
+for the boundary elements (${j=1}$ and $j={n_e}$)
+cannot be defined the same way as in \eqref{eq:generalized_elastic_forces}.
+For these elements the elastic forces are defined as 
+\begin{figure}
+    \centering\includegraphics[width=0.8\linewidth]{Figures/RFEM_Elastic.eps}
+    \caption{Elastic forces in RFEM.}
+    \label{fig:rfem_elastic_forces}
+\end{figure}
+\begin{figure}
+    \centering\includegraphics[width=0.75\linewidth]{Figures/RFEM_Elastic_Boundaries.pdf}
+    \caption{Elastic forces in the boundary elements of RFEM.}
+    \label{fig:rfem_elastic_forces_boundaries}
+\end{figure}
+\[
+    \vecd{Q}_{{\omega}_{j}}^{T} = \mat{Z}_{B_{j}}^{T} \vecd{F}_{{\omega}_j}^{r} +
+    \left(\mat{R}_{f_j}^{F} \mat{G}_{j} \mat{L}_{\theta}\right)^{T}
+    \vecd{M}_{{\omega}_j}^{r}
+    \quad \text{with} \quad  \omega= \{el, d\} \quad \text{and} \quad j=1,
+\]
+and 
+\[
+    \vecd{Q}_{{\omega}_{j}}^{T} = - {\mat{Z}}_{A_{j}}^{T}
+    \vecd{F}_{{\omega}_{j}}^{l} - \left(\mat{R}_{f_j}^{F}
+    \mat{G}_{j} \mat{L}_{\theta}\right)^{T} \vecd{M}_{{\omega}_j}^{l}
+    \quad \text{with} \quad  \omega= \{el, d\} \quad \text{and} \quad j={n_e}.
+\]
+The definition of the matrices ${\mat{Z}}_{A_{j}}$ and ${\mat{Z}}_{B_{j}}$ 
+is identical to \eqref{eq:generalized_elastic_forces_z_matrix}.
+
+\paragraph{External Forces}
+Next, the virtual work of the external forces is defined. For this, we consider
+the point $P^{i}_{j}$ of element $j$, located at the position defined by the
+vector $\vecd{x}_{j}^{i}$ with respect to frame $f_{j}$, which is subject to
+the point force and point moment pair illustrated in Fig.
+\ref{fig:rfem_external_forces}.
+
+\[
+    \delta W_{f_j}^{(ex)} = (\prescript{j}{}{\vecd{F}^{F}_{i}})^{T} \delta 
+    \pvec{r}{OP_{j}^{i}}{F}{F} + (\prescript{j}{}{\vecd{M}^{F}_{i}})^{T}
+    \mat{R}_{f_j}^{F} \mat{G}_{j} \delta \vecd{\theta}_{j}^{i}.
+\]
+Using equation \eqref{eq:rfem_virtual_displacement} and the matrix $\mat{L}_{\theta}$, the above expression can be written as
+\begin{equation}
+    \delta W_{f_j}^{(ex)} = \left[(\prescript{j}{}{\vecd{F}^{F}_{i}})^{T}
+    \mat{Z}_{j}^{i} + (\prescript{j}{}{\vecd{M}^{F}_{i}})^{T}
+    \mat{R}_{f_j}^{F} \mat{G}_{j} \mat{L}_{\theta} \right] \delta \vecd{e}_{j},
+    \label{eq:rfem_virtual_work_external_one_force}
+\end{equation}
+where $\mat{Z}_{j}^{i} = \mat{Z}(\vecd{x}_{j}^{i} , \vecd{e}_{j})$. If we consider that the element $j$ is subject to $n_{f}$ point forces and $n_m$ point moments,
+it can be shown that the total virtual work of the external generalised forces is given as
+\begin{equation}
+    \delta W_{f_j}^{(ex)} = \vecd{Q}_{f_j}^{T} \delta \vecd{e}_{j}
+    \quad \text{with} \quad 
+    \vecd{Q}_{f_j} = \sum_{i = 1}^{n_f} (\mat{Z}_{j}^{i})^{T}
+    (\prescript{j}{}{\vecd{F}^{F}_{i}}) +
+    \mat{L}_{\theta}^{T} \mat{G}_{j} \mat{R}_{F}^{f_{j}}\sum_{k = 1}^{n_m} 
+    (\prescript{j}{}{\vecd{M}^{F}_{k}}).
+    \label{eq:rfem_virtual_work_external}
+\end{equation}
+
+\begin{figure}
+    \centering\includegraphics[width=0.4\linewidth]{Figures/RFEM_Forces.eps}
+    \caption{Free body diagram of element $j$ for the RFEM method.}
+    \label{fig:rfem_external_forces}
+\end{figure}
+
+
+\subsection{Dynamic Equilibrium}
+To derive the flexible needle's equations of motion we apply the dynamic equilibrium expression based on D'Alembert's form of the principle of virtual work, which can be written as
+\[
+    \delta W_{f}^{(in)} = \delta W_{f}^{(el)} + 
+    \delta W_{f}^{(d)} +  \delta W_{f}^{(ex)} + \delta W_{f}^{(c)}.
+\]
+The virtual works of the above expression can be calculated considering the contributions from the individual elements as
+\[
+    \sum_{j=1}^{n_{e}} \delta W_{f_{j}}^{(in)} = \sum_{j=1}^{n_{e}} \left(\delta W_{f_{j}}^{(el)} + 
+    \delta W_{f_{j}}^{(d)} +  \delta W_{f_{j}}^{(ex)} + \delta W_{f_{j}}^{(c)}
+    \right).
+\]
+Substituting the derived virtual work expressions, the above equation becomes
+\[
+    \sum_{j=1}^{n_{e}} \left(\mat{M}_{f_{j}}\vecd{\ddot{e}}_{j} - \vecd{f}_{v_{f_j}} 
+     - \vecd{Q}_{el_j} - \vecd{Q}_{d_j} - \vecd{Q}_{f_j} - \vecd{Q}_{c_j} \right)^{T} \delta \vecd{e}_{j} = 0.
+\]
+If we introduce the mapping from the local generalised coordinates 
+$\vecd{e}_{j}$ of element $j$ to the flexible beam global generalised coordinates
+$\vecd{\bar{q}} $$\in \mathbb{R}^{n_q}$ , such that $\vecd{e}_{j} = \mat{L}_{j} \vecd{\bar{q}}$, then the above expression can be written as
+\begin{equation}
+    (\mat{M}_{f}\ \vecd{\ddot{\bar{q}}} - \vecd{f}_{v_f} - \vecd{Q}_{el} -
+    \vecd{Q}_{d} - \vecd{Q}_{f} - \vecd{Q}_{c})^{T} \delta\vecd{\bar{q}} = 0,
+\end{equation}
+with
+\small
+\begin{equation}
+    \mat{M}_{f} = \sum\limits_{j=1}^{n_{e}}\mat{L}_{j}^{T} \mat{M}_{f_j} \mat{L}_{j}, 
+    \quad 
+    \vecd{f}_{v_f} = \sum\limits_{j=1}^{n_{e}}\mat{L}_{j}^{T} \vecd{f}_{v_{f_j}}
+    \quad \text{and} \quad 
+    \vecd{Q}_{\omega} = \sum\limits_{j=1}^{n_{e}}\mat{L}_{j}^{T} \vecd{Q}_{\omega_{j}}
+    \quad \text{with} \quad \omega = \{el, d, f, c \}.
+    \label{eq:matrices_sums}
+\end{equation}
+\normalsize
+Due to the explicit integration of the constraint forces $\vecd{Q}_{c}$ in the
+above expression, the generalised coordinates of the flexible body can be
+treated as independent and, thus, its equations of motion can be expressed as
+\begin{equation}
+    \mat{M}_{f}\ \vecd{\ddot{\bar{q}}} = \vecd{f}_{v_f} + \vecd{Q}_{el} +
+    \vecd{Q}_{d} + \vecd{Q}_{f} + \vecd{Q}_{c}.
+    \label{eq:equations_of_motion}
+\end{equation}
+or
+\begin{equation}
+    \mat{M}_{f}(\vecd{\bar{q}})\ \vecd{\ddot{\bar{q}}} =
+    \vecd{f}_{v_f}(\bar{\vecd{q}}, \dot{\bar{\vecd{q}}}) +
+    \vecd{Q}_{el}(\bar{\vecd{q}}) + \vecd{Q}_{d}(\bar{\vecd{q}}, \dot{\bar{\vecd{q}}})
+    + \vecd{Q}_{f}(t, \bar{\vecd{q}}, \dot{\bar{\vecd{q}}}) +
+    \vecd{Q}_{c}.
+    \label{eq:equations_of_motion_complete}
+\end{equation}
+
+
+\subsection{Constraint forces}
+The state vector $\vecd{\bar{q}}$
+contains the boundary conditions, due to the rigid connection between the
+flexible needle and the rigid base. The constrained vector $\vecd{q}_{c}$
+incorporates the prescribed motion of the associated coordinates
+(boundary conditions), while the active vector $\vecd{q}_{a}$ describes the
+free (independent) coordinates that define the beam's motion. For the
+rigid finite element method the constrained vector
+$\vecd{q}_{c}$ can take the following form
+
+\begin{equation}
+    \vecd{\bar{q}} = \begin{bmatrix}
+        \vecd{q}_{c} \\ \vecd{q}_{a}
+    \end{bmatrix}, \quad \text{with} \quad
+    \vecd{q}_{c}=  \begin{bmatrix}
+        \pvec{r}{OC_{1}}{F}{F} \\ \vecd{\theta}_{1}.
+    \end{bmatrix}
+    \label{eq:state_partitioning}
+\end{equation}
+
+In a similar fashion, we can split the constrained forces $\vecd{Q}_{c}$
+to their constrained and active componenets ${\vecd{Q}_{c_c}}$ and 
+$\vecd{Q}_{c_a}$. The key idea for obtaining the system's solution is
+that the components of the constraint
+forces corresponding to the active system's coordinates
+are zero, $\vecd{Q}_{c_a} = \vecd{0}_{n_a}$.
+On the other hand, the components $\vecd{Q}_{c_c}$, which result
+from the reaction forces due to
+the boundary conditions at point $A$, are finite and incorporate information
+about the connection forces $\vecd{F}_{A}$ and moments
+$\vecd{M}_{A}$. They also constitute the only variables that the 
+doctor or the robotic system can actively control to steer the 
+system to the desired trajectory (control input).
+
+The generalized contraint forces $Q_{c_c}$ can be correlated with the
+forces acting on the first element the RFEM system as
+\[
+    \vecd{Q}_{c_c} = - \begin{bmatrix}
+    \mat{R}_{f_1}^{F} \vecd{F}_{C_{1}}^{f_{1}} \\
+    \mat{G}_{1}^{T} \vecd{M}_{C_{1}}^{f_{1}}
+    \end{bmatrix} = \mat{D}(\vecd{\bar{q}}) \vecd{u}, \quad \text{with} \quad 
+    \mat{D}(\vecd{\bar{q}})
+    \begin{bmatrix}
+        \mat{R}_{f_1}^{F} && \mat{O}_{3} \\
+        \mat{O}_{3} && \mat{G}_{1}^{T}
+    \end{bmatrix}
+    \quad \text{and} \quad \vecd{u} = \begin{bmatrix}
+    \vecd{F}_{C_{1}}^{f_{1}} \\
+    \vecd{M}_{C_{1}}^{f_{1}}
+    \end{bmatrix}.
+\]
+
+The vectors $\vecd{F}_{C_{1}}^{f_{1}}$ and $\vecd{M}_{C_{1}}^{f_1}$ represent the 
+net force and moment acting on the rfe $1$ with respect to its
+body frame respectively. The total vector $Q_{c}$ is then written as 
+\[
+    \vecd{Q}_{c} = \begin{bmatrix}
+        \vecd{Q}_{c_c} \\ 
+        \vecd{Q}_{c_a} 
+    \end{bmatrix}  =
+    \begin{bmatrix}
+        \mat{D}(\vecd{\bar{q}}) \vecd{u} \\ 
+        \mat{O}_{n_{a} \times n_{u}}
+    \end{bmatrix}  =
+    \begin{bmatrix}
+        \mat{D}(\vecd{\bar{q}}) \\ 
+        \mat{O}_{n_{a} \times n_{u}}
+    \end{bmatrix} \vecd{u} = \mat{\hat{D}}(\vecd{\bar{q}})\vecd{u}, \quad \text{with}
+    \quad \mat{\hat{D}}(\vecd{\bar{q}}) = 
+    \begin{bmatrix}
+        \mat{D}(\vecd{\bar{q}}) \\ 
+        \mat{O}_{n_{a} \times n_{u}}
+    \end{bmatrix}.
+\]
+
+Based on the above, the equations of motion can be written as 
+
+\begin{equation}
+    \mat{M}_{f}(\vecd{\bar{q}})\ \vecd{\ddot{\bar{q}}} =
+    \vecd{f}_{v_f}(\bar{\vecd{q}}, \dot{\bar{\vecd{q}}}) +
+    \vecd{Q}_{el}(\bar{\vecd{q}}) + \vecd{Q}_{d}(\bar{\vecd{q}}, \dot{\bar{\vecd{q}}})
+    + \vecd{Q}_{f}(t, \bar{\vecd{q}}, \dot{\bar{\vecd{q}}}) +
+    \mat{\hat{D}}(\vecd{\bar{q}})\vecd{u}.
+    \label{eq:equations_of_motion_with_control}
+\end{equation}
+
+\subsection{State space reperesentation}
+
+Define $\vecd{x}_{1} = \vecd{\bar{q}}$ and $\vecd{x}_{2} = \vecd{\dot{x}}_{1} = 
+\vecd{\dot{\bar{q}}}$. Then equation
+\eqref{eq:equations_of_motion_with_control} can be written as 
+
+\[
+    \mat{M}_{f}(\vecd{x}_{1})\ \vecd{\dot{x}}_{2} =
+    \vecd{f}_{v_f}(\vecd{x}_{1}, \vecd{x}_{2}) +
+    \vecd{Q}_{el}(\vecd{x}_{1}) + \vecd{Q}_{d}(\vecd{x}_1, \vecd{x}_{2})
+    + \vecd{Q}_{f}(t, \vecd{x}_1, \vecd{x}_{2}) +
+    \mat{\hat{D}}(\vecd{x}_{1})\vecd{u}.
+\]
+or
+
+\begin{multline}
+    \ \vecd{\dot{x}}_{2} =
+    \mat{M}^{-1}_{f}(\vecd{x}_{1})
+    \left(\vecd{f}_{v_f}(\vecd{x}_{1}, \vecd{x}_{2}) +
+    \vecd{Q}_{el}(\vecd{x}_{1}) + \vecd{Q}_{d}(\vecd{x}_1, \vecd{x}_{2})
+    + \vecd{Q}_{f}(t, \vecd{x}_1, \vecd{x}_{2})\right) \\
+    + \mat{M}^{-1}_{f}(\vecd{x}_{1}) 
+    \mat{\hat{D}}(\vecd{x}_{1})\vecd{u}.
+\end{multline}
+
+The complete state space representation of the system is then defined as 
+\begin{equation}
+   \vecd{\dot{x}} = \vecd{f}(t, \vecd{x}) + \mat{B}(\vecd{x})\vecd{u}, 
+   \quad \text{with} \quad \vecd{x} = \begin{bmatrix}
+        \vecd{x}_{1} \\ 
+        \vecd{x}_{2}
+   \end{bmatrix} \in \mathbb{R}^{n}.
+\end{equation}
+
+The system's model function $\vecd{f}(t, \vecd{x})$ is given 
+as
+\[
+    \vecd{f}(t, \vecd{x}) = \begin{bmatrix}
+        \vecd{x}_{2} \\
+    \mat{M}^{-1}_{f}(\vecd{x}_{1})
+    \left(\vecd{f}_{v_f}(\vecd{x}_{1}, \vecd{x}_{2}) +
+    \vecd{Q}_{el}(\vecd{x}_{1}) + \vecd{Q}_{d}(\vecd{x}_1, \vecd{x}_{2})
+    + \vecd{Q}_{f}(t, \vecd{x}_1, \vecd{x}_{2})\right)
+    \end{bmatrix},
+\]
+
+while the control matrix $\mat{B}$ can be written as 
+\[
+    \mat{B}(\vecd{x}) = \begin{bmatrix}
+        \mat{O}_{n_{q} \times n_{u}} \\
+    \mat{M}^{-1}_{f}(\vecd{x}_{1}) 
+    \mat{\hat{D}}(\vecd{x}_{1})
+    \end{bmatrix}.
+\]
+
+
+
+
+    % \left(\mat{M}_{f}(\vecd{x}_{1})\right)^{-1}
+
+
+
+% // Get reaction force at C0
+% arma::dvec fc0_F = -qcc_force.rows(0, 2);
+
+% // Get reaction moment at C0
+% arma::dvec mc0_f = -arma::solve(g0_mat.t(), qcc_force.rows(3, 5));
+
+
+% with the forces 
+% acting on the system we introduce the following equation
+
+
+% \eqref{eq:equations_of_motion_matrix} can be written as
+
+% \[
+%     \vecd{Q}_{c} = \begin{bmatrix}
+%         \vecd{Q}_{c_c} \\
+%         \vecd{Q}_{c_a}
+%     \end{bmatrix}   
+% \]
+
+% \subsection{Coordinate Partitioning}
+% Before the proposed algorithm is formulated, some important remarks
+% for equation \eqref{eq:equations_of_motion} must be made. More
+% specifically, it should be noted that the state vector $\vecd{\bar{q}}$
+% contains the boundary conditions, due to the rigid connection between the
+% flexible needle and the rigid base. The constrained vector $\vecd{q}_{c}$
+% incorporates the prescribed motion of the associated coordinates
+% (boundary conditions), while the active vector $\vecd{q}_{a}$ describes the
+% free (independent) coordinates that define the beam's motion. For the
+% rigid finite element method the constrained vector
+% $\vecd{q}_{c}$ can take the following form
+
+% \begin{equation}
+%     \vecd{\bar{q}} = \begin{bmatrix}
+%         \vecd{q}_{c} \\ \vecd{q}_{a}
+%     \end{bmatrix}, \quad \text{with} \quad
+%     \vecd{q}_{c}=  \begin{bmatrix}
+%         \pvec{r}{OC_{1}}{F}{F} \\ \vecd{\theta}_{1}
+%     \end{bmatrix} \quad \text{and} \quad
+%     \vecd{q}_{a}=  \begin{bmatrix}
+%         \pvec{r}{OC_{i}}{F}{F} \\ \vecd{\theta}_{i}
+%     \end{bmatrix}, i = \{2, \dots n_{e} \}
+%     \label{eq:state_partitioning}
+% \end{equation}
+
+% Base on the above, the equations of motion
+% \eqref{eq:equations_of_motion},
+% can be rewritten as
+% \begin{equation}
+%     \begin{bmatrix}
+%        \mat{M}_{f_{cc}} & \mat{M}_{f_{ca}}  \\
+%        \mat{M}_{f_{ac}} & \mat{M}_{f_{aa}}  \\
+%     \end{bmatrix} \begin{bmatrix}
+%        \vecd{\ddot{q}}_{c} \\
+%        \vecd{\ddot{q}}_{a}
+%     \end{bmatrix} = 
+%     \begin{bmatrix}
+%         \vecd{g}_{c}(t, \vecd{\bar{q}}, \vecd{\dot{\bar{q}}}) \\
+%         \vecd{g}_{a}(t, \vecd{\bar{q}}, \vecd{\dot{\bar{q}}})
+%     \end{bmatrix},
+%     \label{eq:equations_of_motion_matrix}
+% \end{equation}
+
+% where
+% \[
+%     \begin{bmatrix}
+%         \vecd{g}_{c} \\
+%         \vecd{g}_{a}
+%     \end{bmatrix} = \begin{bmatrix}
+%         \vecd{f}_{v_{f_c}} \\
+%         \vecd{f}_{v_{f_a}}
+%     \end{bmatrix} + \begin{bmatrix}
+%         \vecd{Q}_{el_{c}} \\
+%         \vecd{Q}_{el_{a}}
+%     \end{bmatrix}+ \begin{bmatrix}
+%         \vecd{Q}_{d_{c}} \\
+%         \vecd{Q}_{d_{a}}
+%     \end{bmatrix} + \begin{bmatrix}
+%         \vecd{Q}_{f_{c}} \\
+%         \vecd{Q}_{f_{a}}
+%     \end{bmatrix}+ \begin{bmatrix}
+%         \vecd{Q}_{c_{c}} \\
+%         \vecd{Q}_{c_{a}}
+%     \end{bmatrix}.
+% \]
+
+% Note that for a given initial state of the system the components of the vector
+% $\vecd{g} = [\vecd{g}_{c}^{T}, \vecd{g}_{a}^{T}]^{T}$ are all known, except for
+% the generalised constrained forces $\vecd{Q}_{c}$.
+% These generalized contrained forces constitute the only input to the system.
+% The key idea for
+% obtaining the system's solution is that the components of the constraint
+% forces corresponding to the active system's coordinates
+% are zero, $\vecd{Q}_{c_a} = \vecd{0}_{n_a}$.
+% On the other hand, the
+% components $\vecd{Q}_{c_c}$, which result from the reaction forces due to
+% the boundary conditions at point $A$, are finite and incorporate information
+% about the connection forces $\vecd{F}_{A}$ and moments
+% $\vecd{M}_{A}$. Based on this observation, equation
+% \eqref{eq:equations_of_motion_matrix} can be written as
+
+% \begin{equation}
+%     \mat{M}_{f}(\vecd{\bar{q}})\ \vecd{\ddot{\bar{q}}} =
+%     \vecd{f}_{v_f}(\bar{\vecd{q}}, \dot{\bar{\vecd{q}}}) +
+%     \vecd{Q}_{el}(\bar{\vecd{q}}) + \vecd{Q}_{d}(\bar{\vecd{q}}, \dot{\bar{\vecd{q}}})
+%     + \vecd{Q}_{f}(t, \bar{\vecd{q}}, \dot{\bar{\vecd{q}}}) +
+%     \mat{B}\vecd{u}
+% \end{equation}
+
+
+
+
+% \subsection{Mass matrix properties}
+% The mass matrix for element ${j}$ is given as
+% \[
+%     \mat{M}_{f_j}(\vecd{e}_{j}) = \int_{m_{f_j}} \mat{Z}_{j}^{T}(\vecd{x}_{j}, \vecd{e}_{j})
+%     \mat{Z}_{j}(\vecd{x}_{j}, \vecd{e}_{j})\ \mathrm{d}m_{f_j} 
+% \]
+
+% or
+
+% \[
+%     \mat{M}_{f_j}(\vecd{e}_{j}) = \int_{m_{f_j}} \begin{bmatrix}
+%         \mat{I}_{3} &&
+%         -\mat{R}_{f_j}^{F} \mat{S}(\pvec{r}{C_{j}P_{J}}{f_j}{f_j})\mat{G}_{j} \\ 
+%         \left(-\mat{R}_{f_j}^{F} \mat{S}(\pvec{r}{C_{j}P_{J}}{f_j}{f_j})\mat{G}_{j})\right)^{T} &&
+%         \mat{G}_{j}^{T} \mat{S}^{T}(\pvec{r}{C_{j}P_{J}}{f_j}{f_j})
+%         \mat{S}(\pvec{r}{C_{j}P_{J}}{f_j}{f_j}) \mat{G}_{j} 
+%     \end{bmatrix}\mathrm{d}m_{f_j}
+% \]
+
+% or 
+
+% \[
+%     \mat{M}_{f_j}(\vecd{e}_{j}) = \int_{m_{f_j}} \begin{bmatrix}
+%         m_{f_j} \mat{I}_{3} && \mat{O}_{3} \\
+%         \mat{O}_{3} && \mat{G}_{j}^{T} \mat{I}_{C_j}^{f_j} \mat{G}_{j} \\
+%     \end{bmatrix}\mathrm{d}m_{f_j}.
+% \]
